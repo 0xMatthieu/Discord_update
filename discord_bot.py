@@ -1,6 +1,7 @@
 import os
 import discord
 from dotenv import load_dotenv
+from discord import Intents
 
 load_dotenv()
 
@@ -24,5 +25,8 @@ class MyClient(discord.Client):
             messages.append(message.content)
         return messages
 
-client = MyClient()
+intents = Intents.default()
+intents.message_content = True  # Enable the message content intent
+
+client = MyClient(intents=intents)
 client.run(TOKEN)
