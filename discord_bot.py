@@ -11,8 +11,9 @@ load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-SERVER_NAMES = os.getenv('DISCORD_SERVER_NAMES').split(',')
+SERVER_NAMES = os.getenv('DISCORD_SERVER_NAMES').split('/')
 CHANNEL_IDS = os.getenv('DISCORD_CHANNEL_IDS').split(',')
+print(f'SERVER_NAMES: {SERVER_NAMES}')
 
 description = '''A bot to get the last messages from a channel and made analysis on it.
 It will not post any message, only read the last messages.
@@ -26,6 +27,7 @@ stored_messages = defaultdict(set)
 async def on_ready():
     print(f'Logged in as {bot.user}')
     await list_guilds()
+    await list_servers()
 
 async def list_servers():
     print("Listing all available servers and their channels:")
@@ -35,12 +37,12 @@ async def list_servers():
             for channel in guild.channels:
                 print(f'  - Channel: {channel.name} (ID: {channel.id})')
 
-@bot.command()
 async def list_guilds():
     """Print all guilds the bot is a member of."""
-    guilds = [guild.name for guild in bot.guilds]
-    print("Guilds:\n" + "\n".join(guilds))
-    
+    print("Listing all available servers:")
+    for guild in bot.guilds:
+        print(f'- {guild.name}')
+
 async def get_last_messages(channel_id: int, limit: int = 10):
     channel = bot.get_channel(channel_id)
     if channel:
