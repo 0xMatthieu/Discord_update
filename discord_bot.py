@@ -4,12 +4,19 @@ import os
 import discord
 from dotenv import load_dotenv
 from discord import Intents
+from discord.ext import commands
 
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 SERVER_NAME = os.getenv('DISCORD_SERVER_NAME')
+
+description = '''A bot to get the last messages from a channel and made analysis on it.
+It will not post any message, only read the last messages.
+'''
+
+bot = commands.Bot(command_prefix='?', description=description, self_bot=True)
 
 class MyClient(discord.Client):
     async def on_ready(self):
