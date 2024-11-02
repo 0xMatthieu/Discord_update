@@ -1,9 +1,9 @@
-from discord_bot import run_bot, ready_event
+import asyncio
+from discord_bot import run_bot
 
-def start_discord_bot():
-    run_bot()
-    ready_event.wait()  # Wait until the bot is ready
+async def start_discord_bot():
+    await run_bot()
     print("Bot is ready, proceeding with main program.")
 
 if __name__ == "__main__":
-    start_discord_bot()
+    asyncio.run(start_discord_bot())
