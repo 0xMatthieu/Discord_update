@@ -3,6 +3,7 @@
 import os
 import discord
 import asyncio
+import threading
 from collections import defaultdict
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -23,10 +24,12 @@ It will not post any message, only read the last messages.
 bot = commands.Bot(command_prefix='?', description=description, self_bot=True)
 stored_messages = defaultdict(set)
 
+ready_event = threading.Event()
+
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    await list_guilds()
+    ready_event.set()
     await list_servers()
 
 async def list_servers():
