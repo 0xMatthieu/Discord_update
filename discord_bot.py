@@ -24,12 +24,12 @@ It will not post any message, only read the last messages.
 bot = commands.Bot(command_prefix='?', description=description, self_bot=True)
 stored_messages = defaultdict(set)
 
-ready_event = threading.Event()
+ready_event = asyncio.Event()
 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    ready_event.set()
+    ready_event.set()  # Signal that the bot is ready
     await list_servers()
 
 async def list_servers():
