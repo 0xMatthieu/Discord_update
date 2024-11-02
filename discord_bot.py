@@ -75,4 +75,6 @@ async def on_ready():
     await list_servers()
     bot.loop.create_task(periodic_message_fetch())
 """
-bot.run(TOKEN)
+def run_bot():
+    loop = asyncio.get_event_loop()
+    loop.create_task(bot.start(TOKEN))
