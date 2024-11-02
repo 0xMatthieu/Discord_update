@@ -39,12 +39,12 @@ async def list_servers():
 async def list_guilds(ctx):
     """Print all guilds the bot is a member of."""
     guilds = [guild.name for guild in bot.guilds]
-    await ctx.send("Guilds:\n" + "\n".join(guilds))
+    print("Guilds:\n" + "\n".join(guilds))
 async def get_last_messages(ctx, limit: int = 10):
     messages = []
     async for message in ctx.channel.history(limit=limit):
         messages.append(message.content)
-    await ctx.send('\n'.join(messages))
+    print('\n'.join(messages))
 
 async def fetch_and_store_messages():
     for channel_id in CHANNEL_IDS:
