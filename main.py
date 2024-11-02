@@ -1,5 +1,5 @@
 import asyncio
-from discord_bot import run_bot
+from discord_bot import run_bot, ready_event
 
 async def start_discord_bot():
     bot_task = asyncio.create_task(run_bot())
