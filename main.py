@@ -1,9 +1,10 @@
 import asyncio
 from discord_bot import run_bot
 
-async def run_until_complete():
+async def start_discord_bot():
     await run_bot()
-    print("Bot has completed its tasks.")
+    print("Bot is ready, proceeding with main program.")
 
 if __name__ == "__main__":
-    asyncio.run(run_until_complete())
+    asyncio.run(start_discord_bot())
+    print("done")
