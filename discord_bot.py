@@ -25,7 +25,7 @@ stored_messages = defaultdict(set)
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    await list_servers()
+    await list_guilds()
 
 async def list_servers():
     print("Listing all available servers and their channels:")
