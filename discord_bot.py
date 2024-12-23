@@ -21,6 +21,7 @@ It will not post any message, only read the last messages.
 
 bot = commands.Bot(command_prefix='?', description=description, self_bot=True)
 stored_messages = defaultdict(set)
+ready_event = asyncio.Event()
 
 # Initialize SQLite database
 conn = sqlite3.connect('messages.db')
