@@ -39,6 +39,7 @@ c.execute('''
 conn.commit()
 
 async def run_bot():
+    pass
 
 @bot.event
 async def on_ready():
