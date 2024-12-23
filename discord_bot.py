@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
 import os
-import discord
 import asyncio
 import sqlite3
-import threading
 from collections import defaultdict
 from dotenv import load_dotenv
 from discord.ext import commands
-from discord.ext import tasks
 
 load_dotenv()
 
