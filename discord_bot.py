@@ -73,8 +73,7 @@ async def periodic_message_fetch(interval_minutes=10):
         await fetch_and_store_messages()
         await asyncio.sleep(interval_minutes * 60)
 
-@tasks.loop(seconds=5)  # task runs every 60 seconds
-async def test(self):
+async def test():
     print(f'run background task')
     await get_last_messages("1300515004000370688", 3)
 
