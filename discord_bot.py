@@ -5,6 +5,7 @@ import asyncio
 import sqlite3
 from collections import defaultdict
 from dotenv import load_dotenv
+from discord import Status
 from discord.ext import commands
 
 load_dotenv()
