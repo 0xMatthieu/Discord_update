@@ -39,7 +39,6 @@ c.execute('''
 conn.commit()
 
 async def run_bot():
-    await bot.start(TOKEN)
 
 @bot.event
 async def on_ready():
