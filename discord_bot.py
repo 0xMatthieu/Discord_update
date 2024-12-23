@@ -51,9 +51,10 @@ async def list_guilds():
 async def get_last_messages(channel_id: int, limit: int = 10):
     channel = bot.get_channel(int(channel_id))
     if channel:
-        messages = channel.last_message
-        print(f'get')
-        """
+        messages = []
+        async for message in channel.history(limit=limit):
+            messages.append(message.content)
+        print('\n'.join(messages))
         messages = []
         async for message in channel.history(limit=limit):
             messages.append(message.content)
