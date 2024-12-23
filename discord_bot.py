@@ -36,7 +36,8 @@ c.execute('''
 ''')
 conn.commit()
 
-ready_event = asyncio.Event()
+async def run_bot():
+    await bot.start(TOKEN)
 
 @bot.event
 async def on_ready():
