@@ -3,6 +3,7 @@
 import os
 import discord
 import asyncio
+import sqlite3
 import threading
 from collections import defaultdict
 from dotenv import load_dotenv
@@ -23,6 +24,20 @@ It will not post any message, only read the last messages.
 
 bot = commands.Bot(command_prefix='?', description=description, self_bot=True)
 stored_messages = defaultdict(set)
+
+# Initialize SQLite database
+conn = sqlite3.connect('messages.db')
+c = conn.cursor()
+c.execute('''
+    CREATE TABLE IF NOT EXISTS messages (
+        channel_id TEXT,
+        message_id TEXT PRIMARY KEY,
+        sender TEXT,
+        content TEXT,
+        reply_to TEXT
+    )
+''')
+conn.commit()
 
 ready_event = asyncio.Event()
 
@@ -53,7 +68,15 @@ async def get_last_messages(channel_id: int, limit: int = 10):
     if channel:
         messages = []
         async for message in channel.history(limit=limit):
-            messages.append(message.content)
+            if message.id not in stored_messages[channel_id]:
+                stored_messages[channel_id].add(message.id)
+                reply_to = message.reference.message_id if message.reference else None
+                c.execute('''
+                    INSERT OR IGNORE INTO messages (channel_id, message_id, sender, content, reply_to)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (channel_id, message.id, str(message.author), message.content, reply_to))
+                conn.commit()
+                messages.append(message.content)
         print('\n'.join(messages))
     else:
         print(f"Channel with ID {channel_id} not found.")
@@ -77,6 +100,15 @@ async def test():
     print(f'run background task')
     await get_last_messages("1300515004000370688", 3)
 
-async def run_bot():
+async def test_fetch_last_messages(channel_id: str, limit: int = 3):
+    c.execute('''
+        SELECT content FROM messages
+        WHERE channel_id = ?
+        ORDER BY message_id DESC
+        LIMIT ?
+    ''', (channel_id, limit))
+    rows = c.fetchall()
+    for row in rows:
+        print(row[0])
     await bot.start(TOKEN)
 
