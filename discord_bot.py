@@ -5,7 +5,6 @@ import asyncio
 import sqlite3
 from collections import defaultdict
 from dotenv import load_dotenv
-from discord import Status
 from discord.ext import commands
 
 load_dotenv()
@@ -30,8 +29,10 @@ c = conn.cursor()
 c.execute('''
     CREATE TABLE IF NOT EXISTS messages (
         channel_id TEXT,
+        channel_name TEXT,
         message_id TEXT PRIMARY KEY,
-        sender TEXT,
+        sender_id TEXT,
+        sender_name TEXT,
         content TEXT,
         reply_to TEXT
     )
@@ -39,7 +40,7 @@ c.execute('''
 conn.commit()
 
 async def run_bot():
-    pass
+    await bot.start(TOKEN)
 
 @bot.event
 async def on_ready():
@@ -68,13 +69,15 @@ async def get_last_messages(channel_id: int, limit: int = 10):
     if channel:
         messages = []
         async for message in channel.history(limit=limit):
+            print(message)
             if message.id not in stored_messages[channel_id]:
                 stored_messages[channel_id].add(message.id)
                 reply_to = message.reference.message_id if message.reference else None
                 c.execute('''
                     INSERT OR IGNORE INTO messages (channel_id, message_id, sender, content, reply_to)
                     VALUES (?, ?, ?, ?, ?)
-                ''', (channel_id, message.id, str(message.author), message.content, reply_to))
+                ''', (channel_id, channel.name, message.id, message.author.id, message.author.name,
+                      message.content, reply_to))
                 conn.commit()
                 messages.append(message.content)
         print('\n'.join(messages))
@@ -100,7 +103,7 @@ async def background_task():
     print(f'run background task')
     await get_last_messages("1300515004000370688", 3)
 
-async def test_fetch_last_messages(channel_id: str, limit: int = 3):
+async def display_channel_messages(channel_id: str, limit: int = 3):
     c.execute('''
         SELECT content FROM messages
         WHERE channel_id = ?
@@ -110,5 +113,5 @@ async def test_fetch_last_messages(channel_id: str, limit: int = 3):
     rows = c.fetchall()
     for row in rows:
         print(row[0])
-    await bot.start(TOKEN)
+
 
