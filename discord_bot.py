@@ -108,7 +108,7 @@ async def display_channel_messages(channel_id: str, limit: int = 3):
     c.execute('''
         SELECT content FROM messages
         WHERE channel_id = ?
-        ORDER BY message_id DESC
+        ORDER BY created_at DESC
         LIMIT ?
     ''', (channel_id, limit))
     rows = c.fetchall()
