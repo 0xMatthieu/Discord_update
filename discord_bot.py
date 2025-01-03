@@ -34,7 +34,8 @@ c.execute('''
         sender_id TEXT,
         sender_name TEXT,
         content TEXT,
-        reply_to TEXT
+        reply_to TEXT,
+        created_at TEXT
     )
 ''')
 conn.commit()
@@ -74,10 +75,10 @@ async def get_last_messages(channel_id: int, limit: int = 10):
                 stored_messages[channel_id].add(message.id)
                 reply_to = message.reference.message_id if message.reference else None
                 c.execute('''
-                    INSERT OR IGNORE INTO messages (channel_id, message_id, sender, content, reply_to)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT OR IGNORE INTO messages (channel_id, message_id, sender, content, reply_to, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ''', (channel_id, channel.name, message.id, message.author.id, message.author.name,
-                      message.content, reply_to))
+                      message.content, reply_to, message.created_at))
                 conn.commit()
                 messages.append(message.content)
         print('\n'.join(messages))
