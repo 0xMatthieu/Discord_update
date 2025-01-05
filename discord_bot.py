@@ -23,25 +23,11 @@ bot = commands.Bot(command_prefix='?', description=description, self_bot=True)
 stored_messages = defaultdict(set)
 ready_event = asyncio.Event()
 
-# Initialize SQLite database
-conn = sqlite3.connect('messages.db')
-c = conn.cursor()
-c.execute('''
-    CREATE TABLE IF NOT EXISTS messages (
-        channel_id TEXT,
-        channel_name TEXT,
-        message_id TEXT PRIMARY KEY,
-        sender_id TEXT,
-        sender_name TEXT,
-        content TEXT,
-        reply_to TEXT,
-        created_at TEXT
-    )
-''')
-conn.commit()
-
 async def run_bot():
     await bot.start(TOKEN)
+
+async def getter_bot():
+    return bot
 
 @bot.event
 async def on_ready():
@@ -72,47 +58,33 @@ async def get_last_messages(channel_id: int, limit: int = 10):
         async for message in channel.history(limit=limit):
             print(message)
             if message.id not in stored_messages[channel_id]:
-                stored_messages[channel_id].add(message.id)
                 reply_to = message.reference.message_id if message.reference else None
-                c.execute('''
-                    INSERT OR IGNORE INTO messages (channel_id, message_id, sender, content, reply_to, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (channel_id, channel.name, message.id, message.author.id, message.author.name,
-                      message.content, reply_to, message.created_at))
-                conn.commit()
+                message_data = (channel_id, channel.name, message.id, message.author.id, message.author.name,
+                                message.content, reply_to, message.created_at)
+                stored_messages[channel_id].add(message_data)
                 messages.append(message.content)
         print('\n'.join(messages))
     else:
         print(f"Channel with ID {channel_id} not found.")
 
-async def fetch_and_store_messages():
-    for channel_id in CHANNEL_IDS:
-        channel = bot.get_channel(int(channel_id))
-        if channel:
-            async for message in channel.history(limit=100):
-                if message.id not in stored_messages[channel_id]:
-                    stored_messages[channel_id].add(message.id)
-                    # Store message content or any other relevant data
-                    print(f"Stored message from {channel.name}: {message.content}")
 
-async def periodic_message_fetch(interval_minutes=10):
-    while True:
-        await fetch_and_store_messages()
-        await asyncio.sleep(interval_minutes * 60)
+async def display_stored_messages_with_field_names():
+    field_names = [
+        "Channel ID", "Channel Name", "Message ID", "Author ID", "Author Name",
+        "Message Content", "Reply To", "Created At"
+    ]
 
-async def background_task():
+    for channel_id, messages in stored_messages.items():
+        print(f"Channel ID: {channel_id}")
+        for message_data in messages:
+            print("  Message Data:")
+            for field_name, field_value in zip(field_names, message_data):
+                print(f"    {field_name}: {field_value}")
+
+async def test_standard():
     print(f'run background task')
     await get_last_messages("1300515004000370688", 3)
+    await display_stored_messages_with_field_names()
 
-async def display_channel_messages(channel_id: str, limit: int = 3):
-    c.execute('''
-        SELECT content FROM messages
-        WHERE channel_id = ?
-        ORDER BY created_at DESC
-        LIMIT ?
-    ''', (channel_id, limit))
-    rows = c.fetchall()
-    for row in rows:
-        print(row[0])
 
 
