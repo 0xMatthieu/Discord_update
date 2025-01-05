@@ -5,8 +5,11 @@ import asyncio
 import sqlite3
 from collections import defaultdict
 from discord_bot import getter_bot
+from dotenv import load_dotenv
 
+load_dotenv()
 stored_messages = defaultdict(set)
+CHANNEL_IDS = os.getenv('DISCORD_CHANNEL_IDS').split('/')
 
 # Initialize SQLite database
 conn = sqlite3.connect('messages.db')
@@ -61,6 +64,6 @@ async def display_channel_messages(channel_id: str, limit: int = 3):
 async def test_db():
     print(f'run db test task')
     bot = await getter_bot()
-    await get_last_messages(bot=bot, channel_id=int("1300515004000370688"), limit=3)
-    await display_channel_messages(channel_id="1300515004000370688", limit=3)
+    await get_last_messages(bot=bot, channel_id=int(CHANNEL_IDS[0]), limit=3)
+    await display_channel_messages(channel_id=CHANNEL_IDS[0], limit=3)
 
