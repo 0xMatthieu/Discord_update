@@ -1,40 +1,58 @@
-import os
 import openai
-import sqlite3
-from pydantic import BaseModel
+from dotenv import load_dotenv
+import os
 
-# Load OpenAI API key from environment variables
+from discord_db_mgnt import stored_messages
+
+load_dotenv()
+from smolagents.agents import ToolCallingAgent, CodeAgent
+from smolagents import tool, LiteLLMModel, ManagedAgent
+from typing import Optional
+from discord_bot import get_last_messages
+import asyncio
+
+# Initialize the OpenAI API key
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-# Define a Pydantic model for the response
-class SummaryResponse(BaseModel):
-    channel_id: str
-    summary: str
+model = LiteLLMModel(model_id="gpt-4o")
 
-def summarize_channel_messages(channel_id: str) -> SummaryResponse:
-    # Connect to the SQLite database
-    conn = sqlite3.connect('messages.db')
-    c = conn.cursor()
+@tool
+def summarize_a_channel(channel_id: str, limit: Optional[int] = 10) -> str:
+    """
+    get messages from a channel and returns a summary of what have been discussed
 
-    # Fetch messages from the database
-    c.execute('''
-        SELECT content FROM messages
-        WHERE channel_id = ?
-    ''', (channel_id,))
-    messages = c.fetchall()
+    Args:
+        channel_id: as the name suggests, it is the id of requested channel. It could be str or int
+        limit: optional arg to specify number of messages to retrieve
+    """
+    messages = asyncio.run(get_last_messages(channel_id=int(channel_id), limit=limit))
+    output = f"""## channel {channel_id} \n"""
+    for message_data in messages[int(channel_id)]:
+        author_name = message_data[4]
+        message_content = message_data[5]
+        output = output + f"""author {author_name} said: {message_content} \n """
 
-    # Concatenate messages into a single string
-    content = " ".join([msg[0] for msg in messages])
+    #print(output)
+    return output
 
-    # Use OpenAI to summarize the content
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=f"Summarize the following messages: {content}",
-        max_tokens=150
-    )
+agent = ToolCallingAgent(tools=[summarize_a_channel], model=model, max_iterations=1)
 
-    # Extract the summary from the response
-    summary = response.choices[0].text.strip()
+managed_discord_agent = ManagedAgent(
+    agent=agent,
+    name="summarize",
+    description="""You will be tasked to read messages and provide a summary. 
+    Focus on major points about crypto and leave daily discussions""",
+)
 
-    # Return the summary wrapped in a Pydantic model
-    return SummaryResponse(channel_id=channel_id, summary=summary)
+manager_agent = CodeAgent(
+    tools=[],
+    model=model,
+    managed_agents=[managed_discord_agent],
+    additional_authorized_imports=["asyncio", "discord_bot"],
+)
+
+def call_agent(query: str, simple_agent: Optional[bool] = True):
+    if simple_agent:
+        print(agent.run(query))
+    else:
+        print(manager_agent.run(query))

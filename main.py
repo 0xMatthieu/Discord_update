@@ -1,15 +1,17 @@
 import asyncio
-from discord_bot import run_bot, ready_event, test_standard
-from discord_db_mgnt import test_db
+from discord_bot import ready_event, start_discord_bot
+from ai_agent import call_agent
+import os
 
-async def start_discord_bot():
-    bot_task = asyncio.create_task(run_bot())
-    await ready_event.wait()  # Wait until the bot is ready
-    print("Bot is ready, proceeding with main program.")
-    #await test_db()  # Call the test function
-    await test_standard()
-    # await bot_task  # Ensure the bot task completes
+async def init():
+    await start_discord_bot()
+    print("Bot has been started")
 
 if __name__ == "__main__":
-    asyncio.run(start_discord_bot())
+    """
+    asyncio.run(init())
+    print('bot started')
+    """
+    call_agent(query=f'can you summarize last 10 messages of channel {os.getenv('DISCORD_CHANNEL_IDS')}',
+               simple_agent=False)
     print("done")
